@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template CF para a custom Athena - athena-cf-us-east-1-337909775521-sandbox-dlh
+#Metadata: 
+
+Parameters: 
+  pExportS3StackName:
+    Default: s3-cf-us-east-1-337909775521-sandbox-dlh
+    Description: The name of the vpc stack that exports values
+    Type: String
+
+  pEnv:
+    Default: sandbox
+    Description: The custom Env to stack
+    Type: String 
+
+  pSolution:
+    Default: dlh
+    Description: The custom Env to stack
+    Type: String
+
+#Mappings: 
+
+#Conditions: 
+
+Resources: 
+  rAthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: data-viz
+      Description: Workgroup to work specific use of data viz
+      State: ENABLED
+      WorkGroupConfiguration: 
+        BytesScannedCutoffPerQuery: 10485760 # Em bytes, convertido para megabytes sao 10mb
+        EnforceWorkGroupConfiguration: true    
+        ResultConfiguration: 
+          OutputLocation: !Join
+            - ''
+            - - 's3://'
+              - Fn::ImportValue: !Sub '${pExportS3StackName}-oS3BucketNameAthena'
+      
+Outputs:
+  #Serve para usarmos o endpoint na conexão via Dbeaver e Hop
+  oAthenaWorkGroup:
+    Value: !Ref rAthenaWorkGroup
+    Description: Workgroup name for data visualization    
+    Export:
+      Name: !Sub ${AWS::StackName}-oAthenaWorkGroup #export para o iam_users

@@ -1,0 +1,14 @@
+Excluir os arquivos/pastas do diretÃ³rio do Hop para gerar uma imagem docker menor
+
+/hop/plugins/engines/beam
+/hop/plugins/databases/hive
+/hop/plugins/databases/access
+/hop/plugins/transform/tika
+/hop/plugins/transform/excel
+/hop/plugins/tech/Cassandra
+/hop/plugins/tech/drop
+/hop/plugins/tech/neo
+/hop/lib/jdbc/clickhouse-jdbc-0.6.0-patch4-all.jar
+/hop/lib/jdbc/snowflake-jdbc-3.14.3.jar
+/hop/lib/jdbc/duckdb_jdbc-0.10.2.jar
+/hop/lib/jdbc/sqlite-jdbc-3.43.0.0.jar

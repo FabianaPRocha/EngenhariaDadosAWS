@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template CF para a custom RDS PostgreSQL 15 - rds-cf-us-east-1-337909775521-sandbox-dlh
+# Metadata: 
+
+Parameters: 
+  pExportVpcStackName:
+    Default: vpc-cf-us-east-1-337909775521-sandbox-dlh
+    Description: The name of the vpc stack that exports values
+    Type: String
+
+  pEnv:
+    Default: sandbox
+    Description: The custom Env to stack
+    Type: String
+
+  pSolution:
+    Default: dlh
+    Description: The custom Env to stack
+    Type: String    
+
+  pDBName:
+    Default: motorinc_oltp
+    Description: The database name
+    Type: String
+
+#Mappings: 
+
+#Conditions: 
+
+Resources: 
+  PostgreSQLSecret:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      Name: !Sub secret-oltp-postgres-15-6-rds-${AWS::Region}-${AWS::AccountId}-${pEnv}-${pSolution}
+      Description: "Secrets Manager secret for RDS PostgreSQL instance"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "postgres"}'
+        GenerateStringKey: "password" # gera senha aleatoria
+        PasswordLength: 16
+        ExcludeCharacters: '";+%@/\\'
+
+  rdsDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      BackupRetentionPeriod: 0
+      DBInstanceIdentifier: !Sub oltp-postgres-15-6-rds-${AWS::Region}-${AWS::AccountId}-${pEnv}-${pSolution}
+      DBName: !Ref pDBName
+      DBParameterGroupName: !Ref rdsDBParameterGroup
+      DBSubnetGroupName: !Ref rdsDBSubnetGroup
+      Engine: postgres
+      EngineVersion: 15.6
+      MasterUsername: !Sub '{{resolve:secretsmanager:${PostgreSQLSecret}::username}}'
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${PostgreSQLSecret}::password}}'
+      MultiAZ: false
+      PubliclyAccessible: true
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub ${pExportVpcStackName}-oSecGroupName
+      StorageType: gp3
+
+  rdsDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub Subnet group for RDS database in ${pEnv} for ${pSolution}
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${pExportVpcStackName}-oSubnetName1
+        - Fn::ImportValue: !Sub ${pExportVpcStackName}-oSubnetName2
+
+  rdsDBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: !Sub DB Parameter Group for RDS database in ${pEnv} for ${pSolution}
+      Family: postgres15
+      Parameters:
+        rds.logical_replication: 1
+        rds.log_retention_period: 1440 
+
+Outputs:
+  # Export Secret ARN
+  oSecretARN:
+      Description: 'ARN of the Secrets Manager secret for PostgreSQL instance'
+      Value: !Ref PostgreSQLSecret
+      Export:
+        Name: !Sub '${AWS::StackName}-oSecretARN'
+      #Usado na stack  dms
+      #para saber a senha gerada precisa acessar a console do Secrets manager
+
+  # Export RDS 
+  oRDSDBInstanceEndpoint:
+      Description: 'The connection endpoint for the database.'
+      Value: !GetAtt 'rdsDBInstance.Endpoint.Address'
+      Export:
+        Name: !Sub '${AWS::StackName}-oRDSDBInstanceEndpoint'
+      #Usado na stack dms              
+
+

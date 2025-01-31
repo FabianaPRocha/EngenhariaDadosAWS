@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template CF para a custom EC2 - ec2-cf-us-east-1-337909775521-sandbox-dlh
+#Metadata: 
+
+Parameters: 
+  pExportVpcStackName:
+    Default: vpc-cf-us-east-1-337909775521-sandbox-dlh
+    Description: The name of the vpc stack that exports values
+    Type: String
+
+#Mappings: 
+
+#Conditions: 
+
+Resources: 
+  myKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties: 
+      KeyName: key_aws_training_12
+
+#  myEC2InstanceTeste:
+#    Type: AWS::EC2::Instance
+#    Properties:
+#      KeyName: !Ref myKeyPair
+#      ImageId: ami-07cc1bbe145f35b58 #Microsoft Windows Server 2022 Base (Microsoft Windows 2022 Datacenter edition. [English]) ami-07cc1bbe145f35b58 (64-bit (x86))
+#      InstanceType: t3a.micro
+#      NetworkInterfaces:
+#        - AssociatePublicIpAddress: true
+#          DeviceIndex: 0
+#          SubnetId: !ImportValue
+#            'Fn::Sub': '${pExportVpcStackName}-oSubnetName1'
+#          GroupSet:
+#            - Fn::ImportValue: !Sub ${pExportVpcStackName}-oSecGroupName  
+
+  myEC2InstanceWindows:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref myKeyPair
+      ImageId: ami-0b31c7ce489f5900d #Microsoft Windows Server 2022 Base (Microsoft Windows 2022 Datacenter edition. [English]) ami-07cc1bbe145f35b58 (64-bit (x86))
+      InstanceType: t3a.medium
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${pExportVpcStackName}-oSubnetName1'
+          GroupSet:
+            - Fn::ImportValue: !Sub ${pExportVpcStackName}-oSecGroupName
+
+  myEC2InstanceLinux:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref myKeyPair
+      ImageId: ami-0a3babb2f0068360a #Ubuntu Server 22.04 LTS (HVM) - ami-0a0e5d9c7acc336f1 (64-bit (x86)) 
+      InstanceType: t3a.small
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${pExportVpcStackName}-oSubnetName1'
+          GroupSet:
+            - Fn::ImportValue: !Sub ${pExportVpcStackName}-oSecGroupName
+
+
+#Outputs:

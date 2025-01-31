@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template CF para a custom VPC - vpc-cf-us-east-1-337909775521-sandbox-dlh
+
+#Metadata: 
+
+#Parameters: 
+
+#Mappings: 
+
+#Conditions: 
+
+Resources:
+  #01
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 192.168.0.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  #02
+  igwName:
+    Type: AWS::EC2::InternetGateway
+
+  #02  
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref myVPC
+      InternetGatewayId: !Ref igwName
+
+  #03
+  subnetName1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      VpcId: !Ref myVPC
+      CidrBlock: 192.168.0.0/25
+
+  #03
+  subnetName2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1c
+      VpcId: !Ref myVPC
+      CidrBlock: 192.168.0.128/25
+  
+  #04
+  routeTableName:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref myVPC
+
+  #05
+  routeName:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref routeTableName
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref igwName
+
+  #06
+  routeTableAssocName1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref subnetName1
+      RouteTableId: !Ref routeTableName
+
+  #06
+  routeTableAssocName2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref subnetName2
+      RouteTableId: !Ref routeTableName
+
+  #07
+  secGroupName:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group da VPC by Cloudformation"
+      VpcId: !Ref myVPC
+
+  #07
+  secGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+        GroupId: !Ref secGroupName
+        IpProtocol: -1
+        SourceSecurityGroupId: !GetAtt secGroupName.GroupId
+
+  #08
+  vpcEndpointS3:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - '*'
+            Resource:
+              - '*'
+      RouteTableIds:
+        - !Ref routeTableName
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      VpcId: !Ref myVPC 
+
+
+     
+Outputs:
+   # Export Public Subnet 1
+  oSubnetName1:
+    Description: Public Subnet 1 ID
+    Value: !Ref subnetName1
+    Export:
+      Name: !Sub ${AWS::StackName}-oSubnetName1 
+
+  # Export Public Subnet 2
+  oSubnetName2:
+    Description: Public Subnet 2 ID
+    Value: !Ref subnetName2
+    Export:
+      Name: !Sub ${AWS::StackName}-oSubnetName2
+
+  # Export Security Group ID
+  oSecGroupName:
+    Description: Security Group ID
+    Value: !Ref secGroupName
+    Export:
+      Name: !Sub ${AWS::StackName}-oSecGroupName

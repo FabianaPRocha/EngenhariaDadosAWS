@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template CF para a custom SES - ses-cf-us-east-1-337909775521-sandbox-dlh
+
+#Metadata:
+
+#Parameters:
+
+#Mappings: 
+
+# Conditions:
+
+Resources: 
+  SESEmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: fabianapaesrocha@gmail.com
+      MailFromAttributes:
+        BehaviorOnMxFailure: USE_DEFAULT_VALUE
+      FeedbackAttributes:
+        EmailForwardingEnabled: false
+
+#Outputs:

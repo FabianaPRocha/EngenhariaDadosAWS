@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template CF para a custom Glue - glue-cf-us-east-1-337909775521-sandbox-dlh
+#Metadata: 
+
+Parameters: 
+  pEnv:
+    Default: sandbox
+    Description: The custom Env to stack
+    Type: String 
+
+  pSolution:
+    Default: dlh
+    Description: The custom Env to stack
+    Type: String
+
+#Mappings: 
+
+#Conditions: 
+
+Resources: 
+  rGlueDatabaseOds:
+      Type: AWS::Glue::Database
+      Properties:
+          DatabaseInput: 
+              Name: ods
+          CatalogId: !Sub ${AWS::AccountId}
+
+  rGlueDatabaseDwh:
+      Type: AWS::Glue::Database
+      Properties:
+          DatabaseInput: 
+              Name: dwh
+          CatalogId: !Sub ${AWS::AccountId}
+
+Outputs:
+  oGlueDatabaseOds:
+    Value: !Ref rGlueDatabaseOds
+    Description: Glue databse name for Ods
+    Export:
+      Name: !Sub ${AWS::StackName}-oGlueDatabaseOds #export para o iam_users
+
+  oGlueDatabaseDwh:
+    Value: !Ref rGlueDatabaseDwh
+    Description: Glue databse name for Dwh    
+    Export:
+      Name: !Sub ${AWS::StackName}-oGlueDatabaseDwh #export para o iam_users
